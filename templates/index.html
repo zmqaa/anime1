@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动漫记录系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        <!-- 头部 -->
+        <div class="mb-8 text-center">
+            <h1 class="text-4xl font-bold text-indigo-600 mb-2">我的动漫记录</h1>
+            <button onclick="openModal()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                添加新记录
+            </button>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div id="stats" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"></div>
+
+        <!-- 图表 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <div class="bg-white p-4 rounded-lg shadow">
+                <canvas id="tagChart"></canvas>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 数据表格 -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <table class="min-w-full">
+                <thead class="bg-indigo-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left">标题</th>
+                        <th class="px-6 py-3 text-left">标签</th>
+                        <th class="px-6 py-3 text-left">评分</th>
+                        <th class="px-6 py-3 text-left">状态</th>
+                        <th class="px-6 py-3 text-left">观看日期</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTable" class="divide-y divide-gray-200"></tbody>
+            </table>
+        </div>
+
+        <!-- 添加模态框 -->
+        <div id="addModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+            <div class="bg-white p-6 rounded-lg w-96">
+                <h2 class="text-xl font-bold mb-4">添加新记录</h2>
+                <form id="addForm" onsubmit="submitForm(event)" class="space-y-4">
+                    <input type="text" name="title" placeholder="动漫标题" class="w-full p-2 border rounded" required>
+                    <input type="text" name="tags" placeholder="标签（逗号分隔）" class="w-full p-2 border rounded" required>
+                    <input type="number" name="rating" step="0.1" min="0" max="10" placeholder="评分" class="w-full p-2 border rounded" required>
+                    <select name="status" class="w-full p-2 border rounded" required>
+                        <option value="已看完">已看完</option>
+                        <option value="追番中">追番中</option>
+                        <option value="已弃坑">已弃坑</option>
+                    </select>
+                    <input type="date" name="watch_date" class="w-full p-2 border rounded" required>
+                    <input type="number" name="episodes" placeholder="已看集数" class="w-full p-2 border rounded" required>
+                    <textarea name="notes" placeholder="备注" class="w-full p-2 border rounded"></textarea>
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" onclick="closeModal()" class="px-4 py-2 text-gray-600">取消</button>
+                        <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded">添加</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/scripts.js"></script>
+</body>
+</html>
