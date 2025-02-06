@@ -105,21 +105,135 @@ body {
     font-size: 16px;
 }
 
-/* 搜索区域样式 */
 .search-section {
-    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+}
+
+.search-section h2 {
+    margin: 0 0 16px 0;
+    color: #333;
+    font-size: 18px;
 }
 
 .search-container {
     display: flex;
     gap: 10px;
-    margin-bottom: 15px;
 }
 
-.search-results {
+.search-container input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.search-container input:focus {
+    outline: none;
+    border-color: #ff4757;
+}
+
+.search-container .btn {
+    padding: 10px 20px;
+    background: #ff4757;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.search-container .btn:hover {
+    background: #ff2941;
+}
+
+#searchResults {
+    margin-top: 20px;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+    gap: 10px;
+}
+
+.search-result-item {
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 10px;
+}
+
+.search-result-item .title {
+    font-size: 14px;
+    color: #333;
+}
+
+.search-result-item .tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.search-result-item .tag {
+    font-size: 12px;
+    color: #666;
+    background: #eee;
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+
+/* 记录项样式 */
+.record-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 8px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.record-content {
+    flex: 1;
+    margin-right: 12px;
+}
+
+/* 删除按钮样式 */
+.delete-btn {
+    padding: 6px 12px;
+    background: #ff4757;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.delete-btn:hover {
+    background: #ff2941;
+}
+
+/* 无记录提示 */
+.no-records {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+/* 动画效果 */
+.record-item {
+    transition: transform 0.2s, opacity 0.2s;
+}
+
+.record-item.deleting {
+    transform: scale(0.95);
+    opacity: 0.5;
 }
 
 /* 统计卡片样式 */
@@ -150,30 +264,112 @@ body {
     font-weight: bold;
 }
 
-/* 排行榜样式 */
+/* 排行榜容器样式 */
 .rankings-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-}
-
-.ranking-box {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: var(--shadow);
-}
-
-.ranking-item {
     display: flex;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid var(--border-color);
+    gap: 20px;
+    flex-wrap: wrap;
 }
 
-.ranking-item:last-child {
-    border-bottom: none;
+/* 排行榜方框样式 */
+.ranking-box {
+    flex: 1;
+    min-width: 300px;
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
+
+/* 标题样式 */
+.ranking-box h3 {
+    margin: 0 0 16px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* 排行列表样式 */
+.ranking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* 排行项目样式 */
+.ranking-item {
+    display: grid;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+/* 评分排行项目布局 */
+.ranking-box:first-child .ranking-item {
+    grid-template-columns: 36px 1fr 50px;
+    gap: 12px;
+}
+
+/* 最近完成项目布局 */
+.ranking-box:last-child .ranking-item {
+    grid-template-columns: 90px 1fr;
+    gap: 12px;
+}
+
+/* 鼠标悬停效果 */
+.ranking-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* 排名数字样式 */
+.rank {
+    color: #666;
+    font-weight: bold;
+    text-align: center;
+    font-size: 14px;
+    width: 36px;
+}
+
+/* 前三名特殊样式 */
+.ranking-item:nth-child(1) .rank {
+    color: #ff4757;
+}
+
+.ranking-item:nth-child(2) .rank {
+    color: #ff6b81;
+}
+
+.ranking-item:nth-child(3) .rank {
+    color: #ff7f90;
+}
+
+/* 标题样式 */
+.title {
+    color: #2d3436;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 评分样式 */
+.rating {
+    color: #ff4757;
+    font-weight: bold;
+    text-align: right;
+    font-size: 14px;
+}
+
+/* 日期样式 */
+.date {
+    color: #666;
+    font-size: 13px;
+    text-align: left;
+}
+
 
 /* 响应式布局 */
 @media (max-width: 768px) {
@@ -190,7 +386,11 @@ body {
     }
 
     .rankings-container {
-        grid-template-columns: 1fr;
+        flex-direction: column;
+    }
+
+    .ranking-box {
+        min-width: auto;
     }
 }
 

@@ -1,188 +1,142 @@
-// 历史追番记录相关的JavaScript功能
-class HistoryAnimeTracker {
-    constructor() {
-        this.form = document.getElementById('historyWatchForm');
-        this.recordsList = document.getElementById('historyRecords');
-        this.messageContainer = document.createElement('div');
-        this.messageContainer.className = 'message-container';
-        // 将消息容器添加到表单之前
-        this.form.parentNode.insertBefore(this.messageContainer, this.form);
-        this.init();
+document.addEventListener('DOMContentLoaded', function() {
+    const historyForm = document.getElementById('historyWatchForm');
+    const sortBy = document.getElementById('sortBy');
+    const filterTag = document.getElementById('filterTag');
+    
+    loadHistoryRecords();
+    
+    if (historyForm) {
+        historyForm.addEventListener('submit', handleFormSubmit);
     }
-
-    init() {
-        this.bindEvents();
-        this.loadRecords();
-        this.initTagsInput();
+    
+    if (sortBy) {
+        sortBy.addEventListener('change', loadHistoryRecords);
     }
-
-    bindEvents() {
-        this.form.addEventListener('submit', (e) => this.handleSubmit(e));
+    
+    if (filterTag) {
+        filterTag.addEventListener('change', loadHistoryRecords);
     }
+});
 
-    initTagsInput() {
-        const tagsInput = document.getElementById('tags');
-        tagsInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ',') {
-                e.preventDefault();
-                const tag = tagsInput.value.trim();
-                if (tag) {
-                    this.addTag(tag);
-                    tagsInput.value = '';
-                }
-            }
-        });
-    }
-
-    addTag(tag) {
-        const tagsContainer = document.getElementById('tagsContainer');
-        const tagElement = document.createElement('span');
-        tagElement.className = 'tag';
-        tagElement.innerHTML = `
-            ${tag}
-            <button type="button" class="tag-remove">&times;</button>
-        `;
-
-        tagElement.querySelector('.tag-remove').addEventListener('click', () => {
-            tagElement.remove();
-        });
-
-        tagsContainer.appendChild(tagElement);
-    }
-
-    getTags() {
-        return Array.from(document.querySelectorAll('.tag'))
-            .map(tag => tag.textContent.trim().replace('×', ''));
-    }
-
-    async handleSubmit(e) {
-        e.preventDefault();
-
-        const formData = {
-            anime_name: document.getElementById('anime_name').value,
-            start_date: document.getElementById('start_date').value,
-            end_date: document.getElementById('end_date').value || null,
-            tags: this.getTags(),
-            rating: parseFloat(document.getElementById('rating').value) || null,
-            notes: document.getElementById('notes').value
-        };
-
-        try {
-            const response = await fetch('/api/history_watch', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            });
-
-            if (response.ok) {
-                this.form.reset();
-                document.getElementById('tagsContainer').innerHTML = '';
-                await this.loadRecords();
-                this.showMessage('记录添加成功！', 'success');
-            } else {
-                throw new Error('提交失败');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            this.showMessage('记录添加失败，请重试', 'danger');
+function handleFormSubmit(e) {
+    e.preventDefault();
+    
+    // 获取标签
+    const tags = Array.from(document.querySelectorAll('.tag-item'))
+        .map(tag => tag.dataset.value);
+    
+    const formData = {
+        anime_name: document.getElementById('anime_name').value,
+        start_date: document.getElementById('start_date').value,
+        end_date: document.getElementById('end_date').value || null,
+        tags: tags,
+        rating: document.getElementById('rating').value || null,
+        notes: document.getElementById('notes').value || ''
+    };
+    
+    fetch('/api/history_watch', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            throw new Error(data.error);
         }
-    }
-
-    async loadRecords() {
-        try {
-            const response = await fetch('/api/history_watch');
-            const records = await response.json();
-            this.displayRecords(records);
-        } catch (error) {
-            console.error('Error:', error);
-            this.showMessage('加载记录失败', 'danger');
-        }
-    }
-
-    displayRecords(records) {
-        const recordsHtml = records.map(record => `
-            <div class="card">
-                <h3>${record.anime_name}</h3>
-                <p>开始时间：${record.start_date}</p>
-                ${record.end_date ? `<p>结束时间：${record.end_date}</p>` : ''}
-                ${record.tags.length ? `<p>标签：${record.tags.join(', ')}</p>` : ''}
-                ${record.rating ? `<p>评分：${record.rating}</p>` : ''}
-                ${record.notes ? `<p>笔记：${record.notes}</p>` : ''}
-                <p class="text-muted">${this.formatDateTime(record.timestamp)}</p>
-            </div>
-        `).join('');
-
-        this.recordsList.innerHTML = recordsHtml;
-    }
-
-    formatDateTime(timestamp) {
-        const date = new Date(timestamp);
-        return date.toLocaleString('zh-CN', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
-
-    showMessage(message, type) {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-        alertDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-
-        // 使用之前创建的消息容器
-        this.messageContainer.innerHTML = ''; // 清除之前的消息
-        this.messageContainer.appendChild(alertDiv);
-
-        setTimeout(() => {
-            alertDiv.remove();
-        }, 3000);
-    }
-
-    async handleSubmit(e) {
-        e.preventDefault();
-
-        const formData = {
-            anime_name: document.getElementById('anime_name').value,
-            start_date: document.getElementById('start_date').value,
-            end_date: document.getElementById('end_date').value || null,
-            tags: this.getTags(),
-            rating: parseFloat(document.getElementById('rating').value) || null,
-            notes: document.getElementById('notes').value
-        };
-
-        try {
-            const response = await fetch('/api/history_watch', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            });
-
-            if (response.ok) {
-                this.form.reset();
-                document.getElementById('tagsContainer').innerHTML = '';
-                await this.loadRecords();
-                this.showMessage('记录添加成功！', 'success');
-            } else {
-                const data = await response.json();
-                throw new Error(data.error || '提交失败');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            this.showMessage(error.message || '记录添加失败，请重试', 'danger');
-        }
-    }
+        document.getElementById('historyWatchForm').reset();
+        document.getElementById('tagsContainer').innerHTML = '';
+        loadHistoryRecords();
+    })
+    .catch(error => {
+        alert('保存失败: ' + error.message);
+    });
 }
 
-// 当文档加载完成时初始化
-document.addEventListener('DOMContentLoaded', () => {
-    new HistoryAnimeTracker();
-});
+function loadHistoryRecords() {
+    const sortBy = document.getElementById('sortBy').value;
+    const filterTag = document.getElementById('filterTag').value;
+    
+    fetch('/api/history_watch')
+        .then(response => response.json())
+        .then(records => {
+            const container = document.getElementById('historyRecords');
+            displayHistoryRecords(container, records, sortBy, filterTag);
+        })
+        .catch(error => {
+            console.error('加载记录失败:', error);
+        });
+}
+
+function displayHistoryRecords(container, records, sortBy, filterTag) {
+    // 标签筛选
+    if (filterTag) {
+        records = records.filter(record => 
+            record.tags && record.tags.includes(filterTag)
+        );
+    }
+    
+    // 排序
+    records.sort((a, b) => {
+        if (sortBy === 'rating') {
+            return (b.rating || 0) - (a.rating || 0);
+        } else {
+            const dateA = new Date(a[sortBy] || '1970-01-01');
+            const dateB = new Date(b[sortBy] || '1970-01-01');
+            return dateB - dateA;
+        }
+    });
+    
+    if (records.length === 0) {
+        container.innerHTML = '<div class="no-records">暂无记录</div>';
+        return;
+    }
+    
+    const recordsHTML = records.map(record => `
+        <div class="record-item" data-id="${record.id}">
+            <div class="record-content">
+                <div class="record-header">
+                    <h3 class="anime-name">${record.anime_name}</h3>
+                    ${record.rating ? `<span class="rating">${record.rating}分</span>` : ''}
+                </div>
+                <div class="dates">
+                    <span>开始: ${record.start_date}</span>
+                    ${record.end_date ? `<span>完成: ${record.end_date}</span>` : ''}
+                </div>
+                ${record.tags && record.tags.length ? `
+                    <div class="tags">
+                        ${record.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                ` : ''}
+                ${record.notes ? `<div class="notes">${record.notes}</div>` : ''}
+            </div>
+            <button class="delete-btn" onclick="deleteHistoryRecord(${record.id})">
+                删除
+            </button>
+        </div>
+    `).join('');
+    
+    container.innerHTML = recordsHTML;
+}
+
+function deleteHistoryRecord(recordId) {
+    if (!confirm('确定要删除这条记录吗？')) {
+        return;
+    }
+    
+    fetch(`/api/history_watch/${recordId}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        loadHistoryRecords();
+    })
+    .catch(error => {
+        alert('删除失败: ' + error.message);
+    });
+}

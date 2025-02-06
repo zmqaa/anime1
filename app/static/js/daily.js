@@ -1,97 +1,105 @@
-// 每日追番记录相关的JavaScript功能
-class DailyAnimeTracker {
-    constructor() {
-        this.form = document.getElementById('dailyWatchForm');
-        this.recordsList = document.getElementById('dailyRecords');
-        this.init();
+document.addEventListener('DOMContentLoaded', function() {
+    const dailyWatchForm = document.getElementById('dailyWatchForm');
+    const dateFilter = document.getElementById('dateFilter');
+    
+    loadDailyRecords();
+    
+    if (dailyWatchForm) {
+        dailyWatchForm.addEventListener('submit', handleFormSubmit);
     }
-
-    init() {
-        this.bindEvents();
-        this.loadRecords();
+    
+    if (dateFilter) {
+        dateFilter.addEventListener('change', loadDailyRecords);
     }
+});
 
-    bindEvents() {
-        this.form.addEventListener('submit', (e) => this.handleSubmit(e));
-    }
-
-    async handleSubmit(e) {
-        e.preventDefault();
-
-        const formData = {
-            anime_name: document.getElementById('anime_name').value,
-            episode: parseInt(document.getElementById('episode').value)
-        };
-
-        try {
-            const response = await fetch('/api/daily_watch', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            });
-
-            if (response.ok) {
-                this.form.reset();
-                await this.loadRecords();
-                this.showMessage('记录添加成功！', 'success');
-            } else {
-                throw new Error('提交失败');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            this.showMessage('记录添加失败，请重试', 'danger');
+function handleFormSubmit(e) {
+    e.preventDefault();
+    
+    const formData = {
+        anime_name: document.getElementById('anime_name').value,
+        episode: parseInt(document.getElementById('episode').value)
+    };
+    
+    fetch('/api/daily_watch', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            throw new Error(data.error);
         }
-    }
-
-    async loadRecords() {
-        try {
-            const response = await fetch('/api/daily_watch');
-            const records = await response.json();
-            this.displayRecords(records);
-        } catch (error) {
-            console.error('Error:', error);
-            this.showMessage('加载记录失败', 'danger');
-        }
-    }
-
-    displayRecords(records) {
-        const recordsHtml = records.map(record => `
-            <div class="card">
-                <h3>${record.anime_name}</h3>
-                <p>第 ${record.episode} 集</p>
-                <p class="text-muted">${this.formatDateTime(record.timestamp)}</p>
-            </div>
-        `).join('');
-
-        this.recordsList.innerHTML = recordsHtml;
-    }
-
-    formatDateTime(timestamp) {
-        const date = new Date(timestamp);
-        return date.toLocaleString('zh-CN', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
-
-    showMessage(message, type) {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type}`;
-        alertDiv.textContent = message;
-
-        const container = document.querySelector('.container');
-        container.insertBefore(alertDiv, this.form);
-
-        setTimeout(() => alertDiv.remove(), 3000);
-    }
+        document.getElementById('dailyWatchForm').reset();
+        loadDailyRecords();
+    })
+    .catch(error => {
+        alert('保存失败: ' + error.message);
+    });
 }
 
-// 页面加载完成后初始化
-document.addEventListener('DOMContentLoaded', () => {
-    new DailyAnimeTracker();
-});
+function loadDailyRecords() {
+    const date = document.getElementById('dateFilter').value;
+    
+    fetch('/api/daily_watch')
+        .then(response => response.json())
+        .then(records => {
+            const container = document.getElementById('dailyRecords');
+            displayDailyRecords(container, records, date);
+        })
+        .catch(error => {
+            console.error('加载记录失败:', error);
+        });
+}
+
+function displayDailyRecords(container, records, filterDate) {
+    // 如果有日期筛选，进行过滤
+    if (filterDate) {
+        records = records.filter(record => record.timestamp.startsWith(filterDate));
+    }
+    
+    if (records.length === 0) {
+        container.innerHTML = '<div class="no-records">暂无记录</div>';
+        return;
+    }
+    
+    const recordsHTML = records.map(record => `
+        <div class="record-item" data-id="${record.id}">
+            <div class="record-content">
+                <div class="anime-info">
+                    <span class="anime-name">${record.anime_name}</span>
+                    <span class="episode">第 ${record.episode} 集</span>
+                </div>
+                <div class="timestamp">${record.timestamp}</div>
+            </div>
+            <button class="delete-btn" onclick="deleteRecord(${record.id})">
+                删除
+            </button>
+        </div>
+    `).join('');
+    
+    container.innerHTML = recordsHTML;
+}
+
+function deleteRecord(recordId) {
+    if (!confirm('确定要删除这条记录吗？')) {
+        return;
+    }
+    
+    fetch(`/api/daily_watch/${recordId}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        loadDailyRecords();
+    })
+    .catch(error => {
+        alert('删除失败: ' + error.message);
+    });
+}

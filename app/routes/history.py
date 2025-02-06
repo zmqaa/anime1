@@ -53,3 +53,21 @@ def handle_history_watch():
     except Exception as e:
         traceback.print_exc()  # 在服务器控制台打印详细错误信息
         return jsonify({'error': str(e)}), 500
+
+
+@bp.route('/api/history_watch/<int:record_id>', methods=['DELETE'])
+def delete_history_watch(record_id):
+    try:
+        history_list = file_handler.load_data('history_watch.json')
+
+        # 找到并删除记录
+        updated_list = [w for w in history_list if w.get('id') != record_id]
+
+        if len(updated_list) == len(history_list):
+            return jsonify({'error': '记录不存在'}), 404
+
+        file_handler.save_data('history_watch.json', updated_list)
+        return jsonify({'message': '记录已删除'})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
