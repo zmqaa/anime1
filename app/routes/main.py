@@ -56,7 +56,7 @@ def get_rankings(history_watches):
         'top_rated': sorted(
             [w for w in history_watches if w.get('rating')],
             key=lambda x: x['rating'],
-            reverse=True
+            reverse=False
         )[:10],
         'recent': sorted(
             [w for w in history_watches if w.get('end_date')],

@@ -8,5 +8,15 @@
     "rating": "10",
     "notes": "",
     "timestamp": "2025-02-06 21:50:45"
+  },
+  {
+    "id": 2,
+    "anime_name": "摇曳百合2",
+    "start_date": "2025-02-08",
+    "end_date": "2025-02-20",
+    "tags": [],
+    "rating": "9",
+    "notes": "",
+    "timestamp": "2025-02-06 22:08:26"
   }
 ]
