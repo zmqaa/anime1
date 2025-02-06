@@ -1,0 +1,18 @@
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>总计录入</h3>
+        <p>{{ stats.total_history }} 部</p>
+    </div>
+    <div class="stat-card">
+        <h3>每日记录</h3>
+        <p>{{ stats.total_daily }} 条</p>
+    </div>
+    <div class="stat-card">
+        <h3>标签数量</h3>
+        <p>{{ stats.total_tags }} 个</p>
+    </div>
+    <div class="stat-card">
+        <h3>平均评分</h3>
+        <p>{{ "%.1f"|format(stats.avg_rating) }}</p>
+    </div>
+</div>

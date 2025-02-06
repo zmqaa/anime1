@@ -1,0 +1,26 @@
+<div class="rankings-container">
+    <div class="ranking-box">
+        <h3>评分排行</h3>
+        <div class="ranking-list">
+            {% for anime in rankings.top_rated %}
+            <div class="ranking-item">
+                <span class="rank">{{ loop.index }}</span>
+                <span class="title">{{ anime.anime_name }}</span>
+                <span class="rating">{{ anime.rating }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="ranking-box">
+        <h3>最近完成</h3>
+        <div class="ranking-list">
+            {% for anime in rankings.recent %}
+            <div class="ranking-item">
+                <span class="date">{{ anime.end_date }}</span>
+                <span class="title">{{ anime.anime_name }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

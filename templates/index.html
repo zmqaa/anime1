@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - 动漫追踪系统{% endblock %}
+
+{% block content %}
+    {% include 'components/search.html' %}
+    
+    <section class="stats-section">
+        <h2>统计概览</h2>
+        {% include 'components/stats.html' %}
+    </section>
+    
+    <section class="rankings-section">
+        <h2>排行榜</h2>
+        {% include 'components/ranking.html' %}
+    </section>
+    
+    <section class="chart-section">
+        <h2>月度统计</h2>
+        <canvas id="monthlyChart"></canvas>
+    </section>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{{ url_for('static', filename='js/stats.js') }}"></script>
+{% endblock %}

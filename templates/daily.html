@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}每日追番 - 动漫追踪系统{% endblock %}
+
+{% block content %}
+<div class="daily-watch-section">
+    <div class="card">
+        <div class="card-body">
+            <h2 class="card-title">记录今日观看</h2>
+            <form id="dailyWatchForm">
+                <div class="form-group">
+                    <label for="anime_name">动漫名称</label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="anime_name" 
+                           name="anime_name" 
+                           required>
+                </div>
+                <div class="form-group">
+                    <label for="episode">观看集数</label>
+                    <input type="number" 
+                           class="form-control" 
+                           id="episode" 
+                           name="episode" 
+                           min="1" 
+                           required>
+                </div>
+                <button type="submit" class="btn">记录</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="records-section">
+        <h2>观看记录</h2>
+        <div class="date-filter">
+            <label for="dateFilter">按日期筛选：</label>
+            <input type="date" 
+                   id="dateFilter" 
+                   class="form-control"
+                   value="{{ today_date }}">
+        </div>
+        <div id="dailyRecords" class="records-container">
+            <!-- 记录将通过 JavaScript 动态加载 -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/daily.js') }}"></script>
+{% endblock %}
