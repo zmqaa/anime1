@@ -3,6 +3,10 @@ class HistoryAnimeTracker {
     constructor() {
         this.form = document.getElementById('historyWatchForm');
         this.recordsList = document.getElementById('historyRecords');
+        this.messageContainer = document.createElement('div');
+        this.messageContainer.className = 'message-container';
+        // 将消息容器添加到表单之前
+        this.form.parentNode.insertBefore(this.messageContainer, this.form);
         this.init();
     }
 
@@ -126,17 +130,59 @@ class HistoryAnimeTracker {
 
     showMessage(message, type) {
         const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type}`;
-        alertDiv.textContent = message;
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
 
-        const container = document.querySelector('.container');
-        container.insertBefore(alertDiv, this.form);
+        // 使用之前创建的消息容器
+        this.messageContainer.innerHTML = ''; // 清除之前的消息
+        this.messageContainer.appendChild(alertDiv);
 
-        setTimeout(() => alertDiv.remove(), 3000);
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 3000);
+    }
+
+    async handleSubmit(e) {
+        e.preventDefault();
+
+        const formData = {
+            anime_name: document.getElementById('anime_name').value,
+            start_date: document.getElementById('start_date').value,
+            end_date: document.getElementById('end_date').value || null,
+            tags: this.getTags(),
+            rating: parseFloat(document.getElementById('rating').value) || null,
+            notes: document.getElementById('notes').value
+        };
+
+        try {
+            const response = await fetch('/api/history_watch', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (response.ok) {
+                this.form.reset();
+                document.getElementById('tagsContainer').innerHTML = '';
+                await this.loadRecords();
+                this.showMessage('记录添加成功！', 'success');
+            } else {
+                const data = await response.json();
+                throw new Error(data.error || '提交失败');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            this.showMessage(error.message || '记录添加失败，请重试', 'danger');
+        }
     }
 }
 
-// 页面加载完成后初始化
+// 当文档加载完成时初始化
 document.addEventListener('DOMContentLoaded', () => {
     new HistoryAnimeTracker();
 });

@@ -29,7 +29,7 @@ class FileHandler:
         except json.JSONDecodeError:
             return []
 
-    def save_data(self, data: List[Dict[str, Any]], filename: str) -> None:
+    def save_data(self, filename: str, data: List[Dict[str, Any]]) -> None:
         """保存数据到JSON文件"""
         file_path = self._get_file_path(filename)
         with open(file_path, 'w', encoding='utf-8') as f:
